@@ -15,14 +15,19 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const handleLogin = async (e: React.FormEvent) => {
+    try {
 
-    const success = login(email, password);
-    if (success) {
-      navigate("/dashboard");
-    } else {
+      e.preventDefault();
+      setError("");
+
+      const success = await login(email, password);
+      if (success) {
+        navigate("/dashboard");
+      } else {
+        setError("Invalid email or password. Please try again.");
+      }
+    } catch (error) {
       setError("Invalid email or password. Please try again.");
     }
   };
