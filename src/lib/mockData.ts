@@ -1,0 +1,198 @@
+import { Ticket, User, Project } from "@/types/ticket";
+
+export const mockUsers: User[] = [
+  {
+    id: "1",
+    name: "John Doe",
+    email: "john@example.com",
+  },
+  {
+    id: "2",
+    name: "Jane Smith",
+    email: "jane@example.com",
+  },
+  {
+    id: "3",
+    name: "Bob Wilson",
+    email: "bob@example.com",
+  },
+];
+
+export const mockProjects: Project[] = [
+  {
+    id: "proj-1",
+    name: "Website Redesign",
+    description: "Complete redesign of company website",
+    createdAt: new Date("2024-01-01"),
+  },
+  {
+    id: "proj-2",
+    name: "Mobile App",
+    description: "Development of mobile application",
+    createdAt: new Date("2024-01-15"),
+  },
+  {
+    id: "proj-3",
+    name: "Customer Portal",
+    description: "New customer self-service portal",
+    createdAt: new Date("2024-02-01"),
+  },
+];
+
+export const mockTickets: Ticket[] = [
+  {
+    id: "TKT-001",
+    title: "Login page not loading",
+    description: "Users are unable to access the login page. The page returns a 500 error.",
+    status: "backlog",
+    priority: "critical",
+    supportLevel: "L1",
+    category: "technical",
+    createdBy: "John Doe",
+    createdAt: new Date("2024-03-10"),
+    expectedCompletionDate: new Date("2024-03-15"),
+    projectId: "proj-1",
+    logs: [
+      {
+        id: "log-1",
+        action: "Ticket created",
+        performedBy: "John Doe",
+        timestamp: new Date("2024-03-10T09:00:00"),
+        notes: "Initial ticket creation",
+      },
+    ],
+  },
+  {
+    id: "TKT-002",
+    title: "Payment processing issue",
+    description: "Payment gateway is failing to process credit card transactions.",
+    status: "todo",
+    priority: "high",
+    supportLevel: "L2",
+    category: "billing",
+    createdBy: "Jane Smith",
+    createdAt: new Date("2024-03-11"),
+    expectedCompletionDate: new Date("2024-03-14"),
+    assignedTo: "Bob Wilson",
+    projectId: "proj-2",
+    logs: [
+      {
+        id: "log-2",
+        action: "Ticket created",
+        performedBy: "Jane Smith",
+        timestamp: new Date("2024-03-11T10:30:00"),
+      },
+      {
+        id: "log-3",
+        action: "Assigned to Bob Wilson",
+        performedBy: "Jane Smith",
+        timestamp: new Date("2024-03-11T11:00:00"),
+      },
+    ],
+  },
+  {
+    id: "TKT-003",
+    title: "Add dark mode support",
+    description: "Users have requested dark mode support for better accessibility.",
+    status: "in-progress",
+    priority: "medium",
+    category: "feature-request",
+    createdBy: "John Doe",
+    createdAt: new Date("2024-03-09"),
+    expectedCompletionDate: new Date("2024-03-20"),
+    assignedTo: "Jane Smith",
+    projectId: "proj-1",
+    logs: [
+      {
+        id: "log-4",
+        action: "Ticket created",
+        performedBy: "John Doe",
+        timestamp: new Date("2024-03-09T14:00:00"),
+      },
+      {
+        id: "log-5",
+        action: "Status changed to In Progress",
+        performedBy: "Jane Smith",
+        timestamp: new Date("2024-03-12T09:00:00"),
+        notes: "Started working on implementing dark mode",
+      },
+    ],
+  },
+  {
+    id: "TKT-004",
+    title: "Database backup failure",
+    description: "Automated database backup is failing since last week.",
+    status: "backlog",
+    priority: "high",
+    supportLevel: "L3",
+    category: "technical",
+    createdBy: "Bob Wilson",
+    createdAt: new Date("2024-03-12"),
+    expectedCompletionDate: new Date("2024-03-16"),
+    projectId: "proj-3",
+    logs: [
+      {
+        id: "log-6",
+        action: "Ticket created",
+        performedBy: "Bob Wilson",
+        timestamp: new Date("2024-03-12T16:00:00"),
+      },
+    ],
+  },
+  {
+    id: "TKT-005",
+    title: "Update user documentation",
+    description: "User documentation needs to be updated with new features.",
+    status: "completed",
+    priority: "low",
+    category: "general",
+    createdBy: "Jane Smith",
+    createdAt: new Date("2024-03-08"),
+    expectedCompletionDate: new Date("2024-03-13"),
+    assignedTo: "John Doe",
+    projectId: "proj-1",
+    logs: [
+      {
+        id: "log-7",
+        action: "Ticket created",
+        performedBy: "Jane Smith",
+        timestamp: new Date("2024-03-08T11:00:00"),
+      },
+      {
+        id: "log-8",
+        action: "Status changed to Completed",
+        performedBy: "John Doe",
+        timestamp: new Date("2024-03-13T15:30:00"),
+        notes: "Documentation has been updated and reviewed",
+      },
+    ],
+  },
+  {
+    id: "TKT-006",
+    title: "API rate limiting",
+    description: "Implement rate limiting for public API endpoints.",
+    status: "in-progress",
+    priority: "medium",
+    supportLevel: "L2",
+    category: "technical",
+    createdBy: "John Doe",
+    createdAt: new Date("2024-03-11"),
+    expectedCompletionDate: new Date("2024-03-18"),
+    assignedTo: "Bob Wilson",
+    projectId: "proj-2",
+    logs: [
+      {
+        id: "log-9",
+        action: "Ticket created",
+        performedBy: "John Doe",
+        timestamp: new Date("2024-03-11T13:00:00"),
+      },
+      {
+        id: "log-10",
+        action: "Status changed to In Progress",
+        performedBy: "Bob Wilson",
+        timestamp: new Date("2024-03-12T10:00:00"),
+      },
+    ],
+  },
+];
