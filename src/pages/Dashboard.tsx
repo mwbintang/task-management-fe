@@ -1,46 +1,56 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TicketCard } from "@/components/TicketCard";
-import { mockTickets, mockProjects } from "@/lib/mockData";
-import { TicketStatus, TicketPriority, Ticket, SupportLevel } from "@/types/ticket";
+import { TicketStatus, TicketPriority, Ticket } from "@/types/ticket";
 import { Search, Ticket as TicketIcon, AlertCircle, Layers } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { SummaryCard } from "@/components/SummaryCard";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { CreateTicketDialog } from "@/components/CreateTicketDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Loading from "@/components/ui/loading";
+import { fetchAllTickets } from "@/services/ticket";
 
 const Dashboard = () => {
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | "all">("all");
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [escalatedFilter, setEscalatedFilter] = useState<"L1" | "L2" | "L3" | "all">("all");
+  const [loading, setLoading] = useState(false);
 
-  const filteredTickets = useMemo(() => {
-    return mockTickets.filter((ticket: Ticket) => {
-      const matchesSearch =
-        ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ticket.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ticket.description.toLowerCase().includes(searchQuery.toLowerCase());
+  const fetchTickets = async () => {
+    setLoading(true);
+    try {
+      const response = await fetchAllTickets({
+        search: searchQuery,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        priority: priorityFilter !== "all" ? priorityFilter : undefined,
+        escalation: escalatedFilter !== "all" ? escalatedFilter : undefined,
+      });
+      setTickets(response.data);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      const matchesStatus = statusFilter === "all" || ticket.status === statusFilter;
-      const matchesPriority = priorityFilter === "all" || ticket.priority === priorityFilter;
-      const matchesProject = !selectedProject || ticket.projectId === selectedProject;
+  // 🔁 Fetch tickets whenever filters/search change
+  useEffect(() => {
+    fetchTickets();
+  }, [searchQuery, statusFilter, priorityFilter, escalatedFilter]);
 
-      return matchesSearch && matchesStatus && matchesPriority && matchesProject;
-    });
-  }, [searchQuery, statusFilter, priorityFilter, selectedProject]);
+  // Derived data
+  const backlogTickets = tickets.filter((t) => t.status === "backlog");
+  const activeTickets = tickets.filter((t) => t.status !== "backlog");
 
-  const backlogTickets = filteredTickets.filter((t) => t.status === "backlog");
-  const activeTickets = filteredTickets.filter((t) => t.status !== "backlog");
-
-  // Calculate summary stats
-  const totalTickets = mockTickets.length;
-  const unsolvedTickets = mockTickets.filter((t) => t.status !== "completed").length;
-  const l1Tickets = mockTickets.filter((t) => t.supportLevel === "L1").length;
-  const l2Tickets = mockTickets.filter((t) => t.supportLevel === "L2").length;
-  const l3Tickets = mockTickets.filter((t) => t.supportLevel === "L3").length;
+  const totalTickets = tickets.length;
+  const unsolvedTickets = tickets.filter((t) => t.status !== "completed").length;
+  const l1Tickets = tickets.filter((t) => t.criticalLevel === "L1").length;
+  const l2Tickets = tickets.filter((t) => t.criticalLevel === "L2").length;
+  const l3Tickets = tickets.filter((t) => t.criticalLevel === "L3").length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,21 +72,9 @@ const Dashboard = () => {
               trend={{ value: 8, isPositive: false }}
               icon={<AlertCircle className="h-4 w-4 text-muted-foreground" />}
             />
-            <SummaryCard
-              title="L1 Tickets"
-              value={l1Tickets}
-              icon={<Layers className="h-4 w-4 text-muted-foreground" />}
-            />
-            <SummaryCard
-              title="L2 Tickets"
-              value={l2Tickets}
-              icon={<Layers className="h-4 w-4 text-muted-foreground" />}
-            />
-            <SummaryCard
-              title="L3 Tickets"
-              value={l3Tickets}
-              icon={<Layers className="h-4 w-4 text-muted-foreground" />}
-            />
+            <SummaryCard title="L1 Tickets" value={l1Tickets} icon={<Layers className="h-4 w-4 text-muted-foreground" />} />
+            <SummaryCard title="L2 Tickets" value={l2Tickets} icon={<Layers className="h-4 w-4 text-muted-foreground" />} />
+            <SummaryCard title="L3 Tickets" value={l3Tickets} icon={<Layers className="h-4 w-4 text-muted-foreground" />} />
           </div>
         </div>
       </div>
@@ -88,7 +86,7 @@ const Dashboard = () => {
             <h2 className="text-lg font-semibold">Filters</h2>
             <CreateTicketDialog />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -122,12 +120,22 @@ const Dashboard = () => {
                 <SelectItem value="critical">Critical</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={escalatedFilter} onValueChange={(value) => setEscalatedFilter(value as "L1" | "L2" | "L3" | "all")}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Escalation" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Escalation</SelectItem>
+                <SelectItem value="L1">L1</SelectItem>
+                <SelectItem value="L2">L2</SelectItem>
+                <SelectItem value="L3">L3</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
 
       <main className="container mx-auto px-4 py-6 space-y-8">
-        {/* Kanban Board */}
         <div>
           <div className="mb-4">
             <h2 className="text-2xl font-bold text-foreground">Active Tickets</h2>
@@ -135,7 +143,11 @@ const Dashboard = () => {
               Drag tickets between columns to update their status
             </p>
           </div>
-          <KanbanBoard tickets={activeTickets} />
+          {loading ? (
+            <Loading/>
+          ) : (
+            <KanbanBoard tickets={tickets} />
+          )}
         </div>
       </main>
     </div>

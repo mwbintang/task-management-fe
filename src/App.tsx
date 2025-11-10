@@ -15,9 +15,23 @@ const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
-  if (!user) {
+  const token = localStorage.getItem("token");
+
+  if (!user && !token) {
     return <Navigate to="/" replace />;
   }
+
+  return <>{children}</>;
+};
+
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  const token = localStorage.getItem("token");
+
+  if (user || token) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -29,7 +43,17 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Login />} />
+            {/* Public route (login only when not logged in) */}
+            <Route
+              path="/"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+
+            {/* Protected routes */}
             <Route
               path="/dashboard"
               element={
@@ -62,6 +86,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+
+            {/* Fallback */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

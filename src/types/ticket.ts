@@ -28,18 +28,29 @@ export interface TicketLog {
   notes?: string;
 }
 
+export interface UserRef {
+  _id: string;
+  name: string;
+  email: string;
+}
+
+export interface ProjectRef {
+  _id: string;
+  name: string;
+}
+
 export interface Ticket {
-  id: string;
+  _id: string;
   title: string;
   description: string;
-  status: TicketStatus;
-  priority: TicketPriority;
-  supportLevel?: SupportLevel;
-  category: TicketCategory;
-  createdBy: string;
-  createdAt: Date;
-  expectedCompletionDate: Date;
-  assignedTo?: string;
-  logs: TicketLog[];
-  projectId: string;
+  status: "backlog" | "todo" | "in-progress" | "completed";
+  priority: "low" | "medium" | "high" | "critical";
+  criticalLevel: "L1" | "L2" | "L3";
+  project: ProjectRef;
+  assignee?: UserRef;
+  reporter: UserRef;
+  attachments: string[];
+  comments: string[];
+  createdAt: string;
+  updatedAt: string;
 }

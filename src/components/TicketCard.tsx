@@ -14,19 +14,28 @@ interface TicketCardProps {
 export const TicketCard = ({ ticket, isDraggable }: TicketCardProps) => {
   const navigate = useNavigate();
 
+  const handleNavigate = () => navigate(`/ticket/${ticket._id}`);
+
+  const formattedDate = (() => {
+    if (!ticket.createdAt) return "N/A";
+    const parsed = Date.parse(ticket.createdAt);
+    return isNaN(parsed) ? "Invalid Date" : format(new Date(parsed), "MMM dd, yyyy");
+  })();
+
   return (
-    <Card 
-      className="hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => navigate(`/ticket/${ticket.id}`)}
+    <Card
+      className={`hover:shadow-md transition-shadow cursor-pointer ${
+        isDraggable ? "cursor-grab active:cursor-grabbing" : ""
+      }`}
+      onClick={handleNavigate}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-mono text-muted-foreground">{ticket.id}</span>
-              {ticket.supportLevel && (
+              {ticket.criticalLevel && (
                 <span className="text-xs font-semibold px-2 py-0.5 bg-primary/10 text-primary rounded">
-                  {ticket.supportLevel}
+                  {ticket.criticalLevel}
                 </span>
               )}
             </div>
@@ -40,20 +49,24 @@ export const TicketCard = ({ ticket, isDraggable }: TicketCardProps) => {
           </div>
         </div>
       </CardHeader>
+
       <CardContent>
         <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
           {ticket.description}
         </p>
+
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <User className="h-3 w-3" />
-            <span>{ticket.createdBy}</span>
+            <span>{ticket?.assignee?.name || "Unassigned"}</span>
           </div>
+
           <div className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            <span>{format(ticket.expectedCompletionDate, "MMM dd, yyyy")}</span>
+            <span>{formattedDate}</span>
           </div>
-          <span className="capitalize">{ticket.category}</span>
+
+          <span className="capitalize">{ticket.status}</span>
         </div>
       </CardContent>
     </Card>
