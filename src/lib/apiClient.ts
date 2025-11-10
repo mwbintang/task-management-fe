@@ -29,6 +29,15 @@ export async function apiClient<T = any>(
 
   const res = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
+  if (res.status === 401) {
+    console.warn("Token expired or invalid. Logging out...");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    // redirect user back to login page
+    window.location.href = "/";
+    return Promise.reject(new Error("Session expired. Please log in again."));
+  }
+
   if (!res.ok) {
     let errorMsg = `API error: ${res.status} ${res.statusText}`;
     try {

@@ -18,6 +18,9 @@ export const Navbar = () => {
   const location = useLocation();
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    
     logout();
     navigate("/");
   };

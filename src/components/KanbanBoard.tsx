@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ticket, TicketStatus } from "@/types/ticket";
+import { Ticket } from "@/types/ticket";
 import { TicketCard } from "./TicketCard";
 import {
   DndContext,
@@ -14,21 +14,24 @@ import {
   useDroppable,
 } from "@dnd-kit/core";
 import { useToast } from "@/hooks/use-toast";
+import { updateTicketStatus } from "@/services/ticket";
 
 interface KanbanBoardProps {
   tickets: Ticket[];
 }
 
-const statusColumns: { status: TicketStatus; title: string }[] = [
+const statusColumns = [
   { status: "todo", title: "To Do" },
   { status: "in-progress", title: "In Progress" },
   { status: "completed", title: "Completed" },
-];
+] as const;
+
+type TicketStatus = (typeof statusColumns)[number]["status"];
 
 // ✅ Draggable wrapper for tickets
 const DraggableTicket = ({ ticket }: { ticket: Ticket }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: ticket.id,
+    id: ticket._id,
   });
 
   const style = transform
@@ -36,7 +39,13 @@ const DraggableTicket = ({ ticket }: { ticket: Ticket }) => {
     : undefined;
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className={isDragging ? "opacity-50" : ""}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={isDragging ? "opacity-50" : ""}
+    >
       <TicketCard ticket={ticket} isDraggable />
     </div>
   );
@@ -61,15 +70,13 @@ const DroppableColumn = ({
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center justify-between">
           <span>{title}</span>
-          <span className="text-sm font-normal text-muted-foreground">
-            {tickets.length}
-          </span>
+          <span className="text-sm font-normal text-muted-foreground">{tickets.length}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
         <div className="space-y-3 min-h-[200px]">
           {tickets.map((ticket) => (
-            <DraggableTicket key={ticket.id} ticket={ticket} />
+            <DraggableTicket key={ticket._id} ticket={ticket} />
           ))}
         </div>
       </CardContent>
@@ -89,11 +96,11 @@ export const KanbanBoard = ({ tickets: initialTickets }: KanbanBoardProps) => {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    const ticket = tickets.find((t) => t.id === event.active.id);
+    const ticket = tickets.find((t) => t._id === event.active.id);
     if (ticket) setActiveTicket(ticket);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveTicket(null);
 
@@ -102,16 +109,33 @@ export const KanbanBoard = ({ tickets: initialTickets }: KanbanBoardProps) => {
     const ticketId = active.id as string;
     const newStatus = over.id as TicketStatus;
 
+    // Optimistic update
     setTickets((prev) =>
-      prev.map((t) => (t.id === ticketId ? { ...t, status: newStatus } : t))
+      prev.map((t) => (t._id === ticketId ? { ...t, status: newStatus } : t))
     );
 
-    toast({
-      title: "Ticket Updated",
-      description: `Ticket ${ticketId} moved to ${
-        statusColumns.find((c) => c.status === newStatus)?.title
-      }`,
-    });
+    try {
+      await updateTicketStatus(ticketId, newStatus);
+
+      toast({
+        title: "Ticket Updated",
+        description: `Ticket moved to ${statusColumns.find((c) => c.status === newStatus)?.title
+          }`,
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "Could not update ticket status",
+        variant: "destructive",
+      });
+
+      // Rollback on failure
+      setTickets((prev) =>
+        prev.map((t) =>
+          t._id === ticketId ? { ...t, status: active.data.current.status } : t
+        )
+      );
+    }
   };
 
   return (

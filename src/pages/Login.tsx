@@ -80,12 +80,6 @@ const Login = () => {
             <Button type="submit" className="w-full" size="lg">
               Sign In
             </Button>
-
-            <div className="text-center text-sm text-muted-foreground mt-4">
-              <p>Demo accounts:</p>
-              <p className="mt-1">john@example.com • jane@example.com • bob@example.com</p>
-              <p className="text-xs mt-1">(Any password works for demo)</p>
-            </div>
           </form>
         </CardContent>
       </Card>

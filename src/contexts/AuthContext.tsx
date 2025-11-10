@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { User } from "@/types/ticket";
-import { mockUsers } from "@/lib/mockData";
 import { loginService } from "@/services/user";
 
 interface AuthContextType {
