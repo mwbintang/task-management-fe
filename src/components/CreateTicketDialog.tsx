@@ -1,42 +1,141 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { TicketPriority, TicketCategory } from "@/types/ticket";
-import { Plus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { mockProjects } from "@/lib/mockData";
+import { mockProjects, mockUsers } from "@/lib/mockData";
+import { fetchProject } from "@/services/project";
+import { createTicket } from "@/services/ticket";
+import { fetchUser } from "@/services/user";
+import Loading from "./ui/loading";
 
-export const CreateTicketDialog = () => {
+export const CreateTicketDialog = ({setOpen, open}: any) => {
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<TicketCategory>("general");
-  const [priority, setPriority] = useState<TicketPriority>("medium");
-  const [projectId, setProjectId] = useState("");
-  const [expectedDate, setExpectedDate] = useState("");
+  const [users, setUsers] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [files, setFiles] = useState<File[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    toast({
-      title: "Ticket Created Successfully",
-      description: `Your ticket has been created and assigned ID: TKT-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-    });
-    
-    // Reset form
-    setTitle("");
-    setDescription("");
-    setCategory("general");
-    setPriority("medium");
-    setProjectId("");
-    setExpectedDate("");
-    setOpen(false);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    project: "",
+    priority: "low",
+    criticalLevel: "L1",
+    expectedDate: "",
+    assignee: "",
+    status: "backlog",
+  });
+
+  const handleChange = (key: string, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
   };
+
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    replaceIndex?: number
+  ) => {
+    const selectedFiles = event.target.files;
+    if (!selectedFiles) return;
+
+    const newFiles = Array.from(selectedFiles);
+    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+
+    if (replaceIndex !== undefined) {
+      setImages((prev) =>
+        prev.map((img, idx) => (idx === replaceIndex ? newPreviews[0] : img))
+      );
+      setFiles((prev) =>
+        prev.map((f, idx) => (idx === replaceIndex ? newFiles[0] : f))
+      );
+    } else {
+      setImages((prev) => [...prev, ...newPreviews]);
+      setFiles((prev) => [...prev, ...newFiles]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
+      const formData = new FormData();
+
+      // append each field from state
+      Object.entries(form).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+
+      // append files separately
+      files.forEach((file) => formData.append("files", file));
+      await createTicket(formData);
+
+      toast({
+        title: "Ticket Created Successfully",
+        description: `Your ticket has been created successfully.`,
+      });
+
+      // Reset
+      setForm({
+        title: "",
+        description: "",
+        project: "",
+        priority: "low",
+        criticalLevel: "L1",
+        expectedDate: "",
+        assignee: "",
+        status: "backlog",
+      });
+      setFiles([]);
+      setImages([]);
+      setOpen(false)
+    } catch (error: any) {
+      toast({
+        title: "Error Creating Ticket",
+        description: error.message || "Something went wrong.",
+        variant: "destructive",
+      });
+    }finally{
+      setIsLoading(false);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const [projectData, userData] = await Promise.all([
+        fetchProject(),
+        fetchUser()
+      ])
+      setUsers(userData.data);
+      setProjects(projectData.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -46,46 +145,57 @@ export const CreateTicketDialog = () => {
           Create Ticket
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Ticket</DialogTitle>
           <DialogDescription>
             Fill in the details below to create a new support ticket
           </DialogDescription>
         </DialogHeader>
+
+        {
+          isLoading && <Loading />
+        }
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* TITLE */}
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
             <Input
               id="title"
               placeholder="Brief description of the issue"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={form.title}
+              onChange={(e) => handleChange("title", e.target.value)}
               required
             />
           </div>
 
+          {/* DESCRIPTION */}
           <div className="space-y-2">
             <Label htmlFor="description">Description *</Label>
             <Textarea
               id="description"
               placeholder="Detailed description of the issue"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={form.description}
+              onChange={(e) => handleChange("description", e.target.value)}
               rows={5}
               required
             />
           </div>
 
+          {/* PROJECT */}
           <div className="space-y-2">
             <Label htmlFor="project">Project *</Label>
-            <Select value={projectId} onValueChange={setProjectId} required>
+            <Select
+              value={form.project}
+              onValueChange={(v) => handleChange("project", v)}
+            >
               <SelectTrigger id="project">
                 <SelectValue placeholder="Select a project" />
               </SelectTrigger>
               <SelectContent>
-                {mockProjects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
+                {projects.map((project) => (
+                  <SelectItem key={project._id} value={project._id}>
                     {project.name}
                   </SelectItem>
                 ))}
@@ -93,25 +203,14 @@ export const CreateTicketDialog = () => {
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
-              <Select value={category} onValueChange={(value) => setCategory(value as TicketCategory)}>
-                <SelectTrigger id="category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="technical">Technical</SelectItem>
-                  <SelectItem value="billing">Billing</SelectItem>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="feature-request">Feature Request</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
+          {/* PRIORITY, CRITICAL LEVEL, STATUS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="priority">Priority *</Label>
-              <Select value={priority} onValueChange={(value) => setPriority(value as TicketPriority)}>
+              <Select
+                value={form.priority}
+                onValueChange={(v) => handleChange("priority", v)}
+              >
                 <SelectTrigger id="priority">
                   <SelectValue />
                 </SelectTrigger>
@@ -123,25 +222,132 @@ export const CreateTicketDialog = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="criticalLevel">Critical Level *</Label>
+              <Select
+                value={form.criticalLevel}
+                onValueChange={(v) => handleChange("criticalLevel", v)}
+              >
+                <SelectTrigger id="criticalLevel">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="L1">L1</SelectItem>
+                  <SelectItem value="L2">L2</SelectItem>
+                  <SelectItem value="L3">L3</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status *</Label>
+              <Select
+                value={form.status}
+                onValueChange={(v) => handleChange("status", v)}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Select ticket status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="backlog">Backlog</SelectItem>
+                  <SelectItem value="todo">To Do</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
+          {/* ASSIGNEE */}
+          <div className="space-y-2">
+            <Label htmlFor="assignee">Assignee *</Label>
+            <Select
+              value={form.assignee}
+              onValueChange={(v) => handleChange("assignee", v)}
+            >
+              <SelectTrigger id="assignee">
+                <SelectValue placeholder="Select assignee" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((user: any) => (
+                  <SelectItem key={user._id} value={user._id}>
+                    {user.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* DATE */}
           <div className="space-y-2">
             <Label htmlFor="expectedDate">Expected Completion Date *</Label>
             <Input
               id="expectedDate"
               type="date"
-              value={expectedDate}
-              onChange={(e) => setExpectedDate(e.target.value)}
+              value={form.expectedDate}
+              onChange={(e) => handleChange("expectedDate", e.target.value)}
               required
-              min={new Date().toISOString().split('T')[0]}
+              min={new Date().toISOString().split("T")[0]}
             />
           </div>
 
+          {/* FILE UPLOAD PREVIEW */}
+          <div className="space-y-2">
+            <Label htmlFor="expectedDate">Attachment</Label>
+            <div className="flex gap-4 flex-wrap">
+              {images.map((src, index) => (
+                <div key={index} className="relative w-16 h-16">
+                  <label className="cursor-pointer block w-full h-full">
+                    <img
+                      src={src}
+                      alt={`Uploaded ${index}`}
+                      className="w-full h-full rounded-lg object-cover"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, index)}
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImages((prev) => prev.filter((_, i) => i !== index));
+                      setFiles((prev) => prev.filter((_, i) => i !== index));
+                    }}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+
+              <label className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors cursor-pointer">
+                <Plus className="w-6 h-6 text-gray-400" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleFileChange(e)}
+                />
+              </label>
+            </div>
+          </div>
+
           <div className="flex gap-4 pt-4">
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1" disabled={isLoading}>
               Create Ticket
             </Button>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
           </div>
