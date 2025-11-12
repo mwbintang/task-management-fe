@@ -2,17 +2,17 @@ import { Ticket, User, Project } from "@/types/ticket";
 
 export const mockUsers: User[] = [
   {
-    id: "1",
+    _id: "6730a1f4b11a29f2c1d2e0a9",
     name: "John Doe",
     email: "john@example.com",
   },
   {
-    id: "2",
+    _id: "6730a1f4b11a29f2c1d2e0a1",
     name: "Jane Smith",
     email: "jane@example.com",
   },
   {
-    id: "3",
+    _id: "6730a1f4b11a29f2c1d2e0a4",
     name: "Bob Wilson",
     email: "bob@example.com",
   },
@@ -39,7 +39,7 @@ export const mockProjects: Project[] = [
   },
 ];
 
-export const mockTickets: Ticket[] = [
+export const mockTickets: any = [
   {
     id: "TKT-001",
     title: "Login page not loading",

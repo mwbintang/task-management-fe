@@ -21,9 +21,16 @@ export async function fetchAllTickets(params: FetchTicketsParams = {}) {
 
 export async function updateTicketStatus(ticketId: string, newStatus: string) {
   return apiClient(`ticket/${ticketId}/status`, {
-    method: "PUT",
-    body:{
+    method: "PATCH",
+    body: {
       status: newStatus
     }
+  });
+}
+
+export async function createTicket(body: any) {
+  return apiClient("ticket", {
+    method: "POST",
+    body: body,
   });
 }

@@ -7,7 +7,7 @@ export type SupportLevel = "L1" | "L2" | "L3";
 export type TicketCategory = "technical" | "billing" | "general" | "feature-request";
 
 export interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   avatar?: string;

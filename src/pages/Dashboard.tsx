@@ -19,8 +19,13 @@ const Dashboard = () => {
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | "all">("all");
   const [escalatedFilter, setEscalatedFilter] = useState<"L1" | "L2" | "L3" | "all">("all");
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
 
   const fetchTickets = async () => {
+    if (open) {
+      return;
+    };
+
     setLoading(true);
     try {
       const response = await fetchAllTickets({
@@ -40,11 +45,7 @@ const Dashboard = () => {
   // 🔁 Fetch tickets whenever filters/search change
   useEffect(() => {
     fetchTickets();
-  }, [searchQuery, statusFilter, priorityFilter, escalatedFilter]);
-
-  // Derived data
-  const backlogTickets = tickets.filter((t) => t.status === "backlog");
-  const activeTickets = tickets.filter((t) => t.status !== "backlog");
+  }, [searchQuery, statusFilter, priorityFilter, escalatedFilter, open]);
 
   const totalTickets = tickets.length;
   const unsolvedTickets = tickets.filter((t) => t.status !== "completed").length;
@@ -84,7 +85,7 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Filters</h2>
-            <CreateTicketDialog />
+            <CreateTicketDialog setOpen={setOpen} open={open} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
@@ -144,7 +145,7 @@ const Dashboard = () => {
             </p>
           </div>
           {loading ? (
-            <Loading/>
+            <Loading />
           ) : (
             <KanbanBoard tickets={tickets} />
           )}
