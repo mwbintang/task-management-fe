@@ -26,7 +26,7 @@ import { createTicket } from "@/services/ticket";
 import { fetchUser } from "@/services/user";
 import Loading from "./ui/loading";
 
-export const CreateTicketDialog = ({setOpen, open}: any) => {
+export const CreateTicketDialog = ({ setOpen, open }: any) => {
   const { toast } = useToast();
   const [users, setUsers] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
@@ -39,10 +39,9 @@ export const CreateTicketDialog = ({setOpen, open}: any) => {
     description: "",
     project: "",
     priority: "low",
-    criticalLevel: "L1",
     expectedDate: "",
     assignee: "",
-    status: "backlog",
+    category: "task",
   });
 
   const handleChange = (key: string, value: string) => {
@@ -98,10 +97,9 @@ export const CreateTicketDialog = ({setOpen, open}: any) => {
         description: "",
         project: "",
         priority: "low",
-        criticalLevel: "L1",
         expectedDate: "",
         assignee: "",
-        status: "backlog",
+        category: "task",
       });
       setFiles([]);
       setImages([]);
@@ -112,7 +110,7 @@ export const CreateTicketDialog = ({setOpen, open}: any) => {
         description: error.message || "Something went wrong.",
         variant: "destructive",
       });
-    }finally{
+    } finally {
       setIsLoading(false);
     }
   };
@@ -203,8 +201,8 @@ export const CreateTicketDialog = ({setOpen, open}: any) => {
             </Select>
           </div>
 
-          {/* PRIORITY, CRITICAL LEVEL, STATUS */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* PRIORITY, LEVEL, STATUS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="priority">Priority *</Label>
               <Select
@@ -224,36 +222,18 @@ export const CreateTicketDialog = ({setOpen, open}: any) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="criticalLevel">Critical Level *</Label>
+              <Label htmlFor="category">Category *</Label>
               <Select
-                value={form.criticalLevel}
-                onValueChange={(v) => handleChange("criticalLevel", v)}
+                value={form.category}
+                onValueChange={(v) => handleChange("category", v)}
               >
-                <SelectTrigger id="criticalLevel">
-                  <SelectValue />
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Select ticket category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="L1">L1</SelectItem>
-                  <SelectItem value="L2">L2</SelectItem>
-                  <SelectItem value="L3">L3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Status *</Label>
-              <Select
-                value={form.status}
-                onValueChange={(v) => handleChange("status", v)}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue placeholder="Select ticket status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="backlog">Backlog</SelectItem>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="task">Task</SelectItem>
+                  <SelectItem value="feature">Feature</SelectItem>
+                  <SelectItem value="bug">Bug</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -340,7 +320,17 @@ export const CreateTicketDialog = ({setOpen, open}: any) => {
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button type="submit" className="flex-1" disabled={isLoading}>
+            <Button type="submit" className="flex-1" disabled=
+              {
+                isLoading ||
+                !form.title ||
+                !form.description ||
+                !form.project ||
+                !form.priority ||
+                !form.expectedDate ||
+                !form.assignee ||
+                !form.category
+              }>
               Create Ticket
             </Button>
             <Button

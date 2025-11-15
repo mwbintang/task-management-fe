@@ -19,6 +19,12 @@ export async function fetchAllTickets(params: FetchTicketsParams = {}) {
   });
 }
 
+export async function fetchTicketById(id: string) {
+  return apiClient(`ticket/${id}`, {
+    method: "GET",
+  });
+}
+
 export async function updateTicketStatus(ticketId: string, newStatus: string) {
   return apiClient(`ticket/${ticketId}/status`, {
     method: "PATCH",

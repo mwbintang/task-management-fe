@@ -21,8 +21,8 @@ interface KanbanBoardProps {
 }
 
 const statusColumns = [
-  { status: "todo", title: "To Do" },
-  { status: "in-progress", title: "In Progress" },
+  { status: "new", title: "New" },
+  { status: "attending", title: "Attending" },
   { status: "completed", title: "Completed" },
 ] as const;
 
@@ -86,7 +86,7 @@ const DroppableColumn = ({
 
 export const KanbanBoard = ({ tickets: initialTickets }: KanbanBoardProps) => {
   const { toast } = useToast();
-  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+  const [tickets, setTickets] = useState<any>(initialTickets);
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
 
   const sensors = useSensors(

@@ -9,9 +9,8 @@ interface StatusBadgeProps {
 
 export const StatusBadge = ({ status, className }: StatusBadgeProps) => {
   const statusConfig = {
-    backlog: { label: "Backlog", color: "bg-muted-foreground" },
-    todo: { label: "To Do", color: "bg-status-todo" },
-    "in-progress": { label: "In Progress", color: "bg-status-in-progress" },
+    new: { label: "New", color: "bg-status-new" },
+    attending: { label: "Attending", color: "bg-status-attending" },
     completed: { label: "Completed", color: "bg-status-completed" },
   };
 

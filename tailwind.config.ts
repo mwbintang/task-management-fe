@@ -58,8 +58,8 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         status: {
-          todo: "hsl(var(--status-todo))",
-          "in-progress": "hsl(var(--status-in-progress))",
+          new: "hsl(var(--status-new))",
+          attending: "hsl(var(--status-attending))",
           completed: "hsl(var(--status-completed))",
           escalated: "hsl(var(--status-escalated))",
         },

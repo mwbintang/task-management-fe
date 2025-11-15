@@ -8,7 +8,6 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import TicketDetail from "./pages/TicketDetail";
 import ProjectTickets from "./pages/ProjectTickets";
-import Backlog from "./pages/Backlog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -75,14 +74,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ProjectTickets />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/backlog"
-              element={
-                <ProtectedRoute>
-                  <Backlog />
                 </ProtectedRoute>
               }
             />
