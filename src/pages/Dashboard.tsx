@@ -49,9 +49,9 @@ const Dashboard = () => {
 
   const totalTickets = tickets.length;
   const unsolvedTickets = tickets.filter((t) => t.status !== "completed").length;
-  const l1Tickets = tickets.filter((t) => t.criticalLevel === "L1").length;
-  const l2Tickets = tickets.filter((t) => t.criticalLevel === "L2").length;
-  const l3Tickets = tickets.filter((t) => t.criticalLevel === "L3").length;
+  const l1Tickets = tickets.filter((t) => t.level === "L1").length;
+  const l2Tickets = tickets.filter((t) => t.level === "L2").length;
+  const l3Tickets = tickets.filter((t) => t.level === "L3").length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,9 +103,8 @@ const Dashboard = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="backlog">Backlog</SelectItem>
-                <SelectItem value="todo">To Do</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="attending">Attending</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>

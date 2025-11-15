@@ -5,6 +5,7 @@ import { PriorityBadge } from "./PriorityBadge";
 import { Calendar, User } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import CategoryBadge from "./CategoryBadge";
 
 interface TicketCardProps {
   ticket: Ticket;
@@ -24,20 +25,24 @@ export const TicketCard = ({ ticket, isDraggable }: TicketCardProps) => {
 
   return (
     <Card
-      className={`hover:shadow-md transition-shadow cursor-pointer ${
-        isDraggable ? "cursor-grab active:cursor-grabbing" : ""
-      }`}
+      className={`hover:shadow-md transition-shadow cursor-pointer ${isDraggable ? "cursor-grab active:cursor-grabbing" : ""
+        }`}
       onClick={handleNavigate}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              {ticket.criticalLevel && (
-                <span className="text-xs font-semibold px-2 py-0.5 bg-primary/10 text-primary rounded">
-                  {ticket.criticalLevel}
-                </span>
-              )}
+              <div className="flex items-center gap-2 mb-2">
+                <CategoryBadge category={ticket.category} />
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                {ticket.level && (
+                  <span className="text-xs font-semibold px-2 py-0.5 bg-primary/10 text-primary rounded">
+                    {ticket.level}
+                  </span>
+                )}
+              </div>
             </div>
             <h3 className="font-semibold text-card-foreground line-clamp-2">
               {ticket.title}

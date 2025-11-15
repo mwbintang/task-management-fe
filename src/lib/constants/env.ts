@@ -9,3 +9,4 @@ const getEnv = (key: string, fallback: string = ""): string => {
 
 // Use VITE_ prefix for environment variables
 export const API_BASE_URL = getEnv("VITE_REACT_APP_API_BASE_URL", "");
+export const BASE_URL = getEnv("VITE_REACT_APP_BASE_URL", "");

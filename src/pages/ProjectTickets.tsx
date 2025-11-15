@@ -9,10 +9,21 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TicketStatus } from "@/types/ticket";
+import { useToast } from "@/hooks/use-toast";
 
 const ProjectTickets = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleStatusChange = (ticketId: string, newStatus: TicketStatus) => {
+    toast({
+      title: "Status Updated",
+      description: `Ticket ${ticketId} status changed to ${newStatus}`,
+    });
+  };
 
   const project = useMemo(() => {
     return mockProjects.find((p) => p.id === projectId);
@@ -90,8 +101,20 @@ const ProjectTickets = () => {
                     >
                       <TableCell className="font-mono text-sm">{ticket.id}</TableCell>
                       <TableCell className="font-medium">{ticket.title}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={ticket.status} />
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Select 
+                          defaultValue={ticket.status} 
+                          onValueChange={(value) => handleStatusChange(ticket.id, value as TicketStatus)}
+                        >
+                          <SelectTrigger className="w-[130px] h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new">New</SelectItem>
+                            <SelectItem value="attending">Attending</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>
                         <PriorityBadge priority={ticket.priority} />

@@ -1,10 +1,10 @@
-export type TicketStatus = "backlog" | "todo" | "in-progress" | "completed";
+export type TicketStatus = "new" | "attending" | "completed";
 
 export type TicketPriority = "low" | "medium" | "high" | "critical";
 
 export type SupportLevel = "L1" | "L2" | "L3";
 
-export type TicketCategory = "technical" | "billing" | "general" | "feature-request";
+export type TicketCategory = "bug" | "task" | "feature";
 
 export interface User {
   _id: string;
@@ -43,9 +43,11 @@ export interface Ticket {
   _id: string;
   title: string;
   description: string;
-  status: "backlog" | "todo" | "in-progress" | "completed";
+  status: TicketStatus;
   priority: "low" | "medium" | "high" | "critical";
-  criticalLevel: "L1" | "L2" | "L3";
+  level: "L1" | "L2" | "L3";
+  criticalLevel: "C1" | "C2" | "C3";
+  category: TicketCategory;
   project: ProjectRef;
   assignee?: UserRef;
   reporter: UserRef;
